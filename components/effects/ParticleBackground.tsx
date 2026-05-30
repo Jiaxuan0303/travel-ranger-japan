@@ -36,7 +36,7 @@ function getBgPath(pathname: string): string {
   if (pathname.includes('/osaka')) return '/images/cities/osaka-bg.png';
   if (pathname.includes('/kyoto')) return '/images/cities/kyoto-bg.png';
   if (pathname.includes('/kamakura')) return '/images/cities/kamakura-bg.png';
-  return '/images/cities/home-bg-new.png'; // Dashboard / HOME
+  return '/images/cities/home-bg.jpg'; // Dashboard / HOME
 }
 
 const sakuraColors = [
