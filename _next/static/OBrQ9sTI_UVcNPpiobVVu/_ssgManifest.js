@@ -1,0 +1,1 @@
+self.__SSG_MANIFEST=new Set(["\u002Fcities\u002F[cityId]","\u002Fquests\u002F[questId]","\u002Fskills\u002F[id]"]);self.__SSG_MANIFEST_CB&&self.__SSG_MANIFEST_CB()
