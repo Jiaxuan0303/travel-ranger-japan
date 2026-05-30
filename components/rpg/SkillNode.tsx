@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Skill } from '@/lib/types';
 import { canUnlockSkill } from '@/lib/engine';
@@ -10,28 +11,27 @@ interface SkillNodeProps {
 }
 
 export function SkillNode({ skill }: SkillNodeProps) {
-  const { skills, dispatch } = useSkills();
+  const router = useRouter();
+  const { skills } = useSkills();
   const unlocked = skills.unlocked.includes(skill.id);
   const canUnlock = canUnlockSkill(skill.id, skills);
 
   const handleClick = () => {
-    if (canUnlock) {
-      dispatch({ type: 'SKILL_UNLOCK', skillId: skill.id });
-    }
+    router.push(`/skills/${skill.id}`);
   };
 
   return (
     <motion.button
-      whileHover={canUnlock ? { scale: 1.08 } : { scale: 1 }}
-      whileTap={canUnlock ? { scale: 0.95 } : {}}
+      whileHover={{ scale: 1.03 }}
+      whileTap={{ scale: 0.97 }}
       onClick={handleClick}
       className={`
-        relative w-full rounded-xl border p-3 text-left transition-colors duration-300
+        relative w-full rounded-xl border p-3 text-left transition-colors duration-300 cursor-pointer
         ${unlocked
-          ? 'border-emerald-500/40 bg-emerald-500/10 cursor-default'
+          ? 'border-emerald-500/40 bg-emerald-500/10 hover:border-emerald-500/60'
           : canUnlock
-          ? 'border-indigo-500/40 bg-indigo-500/10 cursor-pointer hover:border-indigo-500/70'
-          : 'border-slate-700/40 bg-slate-800/30 cursor-not-allowed opacity-50'
+          ? 'border-indigo-500/40 bg-indigo-500/10 hover:border-indigo-500/70'
+          : 'border-slate-700/40 bg-slate-800/30 hover:border-slate-600/50'
         }
       `}
     >

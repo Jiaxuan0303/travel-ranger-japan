@@ -23,6 +23,7 @@ export interface Skill {
   id: string;
   name: string;
   description: string;
+  detail: string;
   branch: SkillBranch;
   tier: 1 | 2 | 3 | 4;
   cost: number;
