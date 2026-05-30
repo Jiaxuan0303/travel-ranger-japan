@@ -17,7 +17,7 @@ export function SideNav() {
 
   return (
     <motion.nav
-      className="fixed left-4 top-1/2 -translate-y-1/2 z-30 hidden lg:flex flex-col gap-1"
+      className="fixed left-4 top-1/2 -translate-y-1/2 z-30 hidden lg:flex flex-col gap-1 bg-slate-950/70 backdrop-blur-md rounded-2xl px-2 py-3 border border-slate-800/60 shadow-lg shadow-black/30"
       initial={{ opacity: 0, x: -30 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.5, delay: 0.3 }}
@@ -41,8 +41,8 @@ export function SideNav() {
                 transition-all duration-300 relative overflow-hidden
                 ${
                   isActive
-                    ? 'bg-white/10 border border-white/10'
-                    : 'border border-transparent hover:bg-white/5'
+                    ? 'bg-slate-800/80 border border-slate-600/50'
+                    : 'border border-transparent hover:bg-slate-800/50'
                 }
               `}
             >

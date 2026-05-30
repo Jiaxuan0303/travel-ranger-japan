@@ -1,10 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useQuests } from '@/hooks/usePlayer';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
+import { AIPanel } from '@/components/ai';
+import type { QuestContext } from '@/components/ai';
 
 interface TokyoQuest {
   id: string;
@@ -81,11 +83,11 @@ const tokyoQuests: TokyoQuest[] = [
   },
 ];
 
-type QuestStep = 'idle' | 'knowledge' | 'learning' | 'done';
+type QuestStep = 'idle' | 'done';
 
 export function QuestLine() {
   const { dispatch } = useQuests();
-  const [step, setStep] = useState<QuestStep>('idle');
+  const [aiOpen, setAiOpen] = useState(false);
   const [activeQuest, setActiveQuest] = useState<TokyoQuest | null>(null);
   const [completedIds, setCompletedIds] = useState<string[]>([]);
 
@@ -98,21 +100,33 @@ export function QuestLine() {
 
   const handleStartLearning = (quest: TokyoQuest) => {
     setActiveQuest(quest);
-    setStep('knowledge');
-    // Auto-advance to learning after 3s
-    setTimeout(() => setStep('learning'), 3000);
-    // Complete after another 2s
-    setTimeout(() => {
-      const globalQuestId = questIdMap[quest.id];
-      dispatch({ type: 'XP_GAIN', amount: quest.xpReward });
+    setAiOpen(true);
+  };
+
+  const handleCloseAI = () => {
+    if (activeQuest) {
+      const globalQuestId = questIdMap[activeQuest.id];
+      dispatch({ type: 'XP_GAIN', amount: activeQuest.xpReward });
       if (globalQuestId) {
         dispatch({ type: 'QUEST_COMPLETE', questId: globalQuestId, cityId: 'tokyo' });
       }
-      setCompletedIds((prev) => [...prev, quest.id]);
-      setStep('done');
-      setTimeout(() => { setStep('idle'); setActiveQuest(null); }, 1500);
-    }, 5000);
+      setCompletedIds((prev) => [...prev, activeQuest.id]);
+    }
+    setAiOpen(false);
+    setActiveQuest(null);
   };
+
+  // AI 面板任务上下文
+  const questContext: QuestContext | null = activeQuest ? {
+    questId: questIdMap[activeQuest.id] || '',
+    questTitle: activeQuest.title,
+    questDescription: activeQuest.description,
+    cityName: '东京',
+    cityNameJa: '東京',
+    knowledge: activeQuest.knowledge,
+    skillTag: activeQuest.skillTag,
+    difficulty: 1,
+  } : null;
 
   return (
     <section className="mb-10">
@@ -133,9 +147,6 @@ export function QuestLine() {
         {tokyoQuests.map((quest, i) => {
           const isCompleted = completedIds.includes(quest.id);
           const isActive = activeQuest?.id === quest.id;
-          const isKnowledge = isActive && step === 'knowledge';
-          const isLearning = isActive && step === 'learning';
-          const justDone = isActive && step === 'done';
 
           return (
             <motion.div
@@ -150,9 +161,7 @@ export function QuestLine() {
                   transition-all duration-500
                   ${isCompleted
                     ? 'bg-emerald-500/5 border-emerald-500/20'
-                    : isKnowledge
-                    ? 'bg-amber-500/10 border-amber-500/30 ring-2 ring-amber-400/30'
-                    : isLearning
+                    : isActive
                     ? 'bg-indigo-500/10 border-indigo-500/30 ring-2 ring-indigo-500/30'
                     : 'bg-slate-800/40 border-slate-700/30 hover:border-slate-600/50'
                   }
@@ -181,77 +190,13 @@ export function QuestLine() {
                   {quest.description}
                 </p>
 
-                {/* Knowledge + Learning overlay */}
-                <AnimatePresence>
-                  {isActive && !justDone && (
-                    <motion.div
-                      className="absolute inset-0 backdrop-blur-md flex items-center justify-center rounded-xl z-10"
-                      style={{
-                        background: isKnowledge
-                          ? 'linear-gradient(135deg, rgba(251,191,36,0.15), rgba(15,23,42,0.9))'
-                          : 'linear-gradient(135deg, rgba(99,102,241,0.15), rgba(15,23,42,0.9))',
-                      }}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                    >
-                      <div className="text-center p-3">
-                        {isKnowledge && (
-                          <>
-                            <motion.div className="text-2xl mb-2" animate={{ y: [0, -4, 0] }} transition={{ repeat: Infinity, duration: 2 }}>
-                              💡
-                            </motion.div>
-                            <p className="text-[11px] text-amber-300 font-medium mb-2" style={{ fontFamily: "'DotGothic16', monospace" }}>
-                              旅行知识
-                            </p>
-                            <ul className="space-y-1.5 text-left">
-                              {quest.knowledge.map((k, j) => (
-                                <motion.li
-                                  key={j}
-                                  className="text-[10px] text-slate-300 flex items-start gap-1"
-                                  initial={{ opacity: 0, x: -8 }}
-                                  animate={{ opacity: 1, x: 0 }}
-                                  transition={{ delay: j * 0.3 }}
-                                >
-                                  <span className="text-amber-400 mt-0.5 shrink-0">•</span>
-                                  {k}
-                                </motion.li>
-                              ))}
-                            </ul>
-                          </>
-                        )}
-                        {isLearning && (
-                          <>
-                            <motion.div className="text-4xl mb-2" animate={{ rotate: [0, 10, -10, 0] }} transition={{ repeat: Infinity, duration: 0.6 }}>
-                              📖
-                            </motion.div>
-                            <p className="text-sm text-indigo-300 font-medium">学习中...</p>
-                            <motion.div className="mt-2 flex gap-1 justify-center">
-                              {[0, 1, 2].map((j) => (
-                                <motion.div key={j} className="w-1.5 h-1.5 rounded-full bg-indigo-400"
-                                  animate={{ y: [0, -6, 0] }} transition={{ repeat: Infinity, duration: 0.4, delay: j * 0.15 }} />
-                              ))}
-                            </motion.div>
-                          </>
-                        )}
-                      </div>
-                    </motion.div>
-                  )}
-                  {justDone && (
-                    <motion.div
-                      className="absolute inset-0 bg-emerald-950/80 backdrop-blur-sm flex items-center justify-center rounded-xl z-10"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                    >
-                      <motion.div className="text-center"
-                        initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring' }}>
-                        <div className="text-3xl mb-1">✅</div>
-                        <p className="text-xs text-emerald-300 font-medium">完成！+{quest.xpReward} EXP</p>
-                      </motion.div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                {isActive && (
+                  <div className="text-center py-2 mb-2">
+                    <p className="text-xs text-indigo-400" style={{ fontFamily: "'DotGothic16', monospace" }}>
+                      🤖 AI 助手已打开
+                    </p>
+                  </div>
+                )}
 
                 <Button
                   size="sm"
@@ -260,13 +205,20 @@ export function QuestLine() {
                   disabled={isCompleted || isActive}
                   onClick={() => handleStartLearning(quest)}
                 >
-                  {isCompleted ? '✓ 已完成' : isActive ? (isKnowledge ? '学习中...' : '学习中...') : '开始学习'}
+                  {isCompleted ? '✓ 已完成' : isActive ? '🤖 学习中...' : '开始学习'}
                 </Button>
               </div>
             </motion.div>
           );
         })}
       </div>
+
+      {/* AI 学习面板 */}
+      <AIPanel
+        open={aiOpen}
+        questContext={questContext}
+        onClose={handleCloseAI}
+      />
     </section>
   );
 }
