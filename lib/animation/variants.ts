@@ -4,6 +4,17 @@
  */
 import { Variants, Transition } from 'framer-motion';
 
+function prefersReducedMotion(): boolean {
+  return (
+    typeof window !== 'undefined' &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  );
+}
+
+function motionSafe<T extends Record<string, unknown>>(value: T, reduced: T): T {
+  return prefersReducedMotion() ? reduced : value;
+}
+
 // ============ Timing Presets ============
 
 export const timing = {
@@ -18,9 +29,9 @@ export const timing = {
 // ============ Page Transition ============
 
 export const pageVariants: Variants = {
-  initial: { opacity: 0, y: 12 },
+  initial: motionSafe({ opacity: 0, y: 12 }, { opacity: 0 }),
   enter: { opacity: 1, y: 0, transition: timing.normal },
-  exit: { opacity: 0, y: -12, transition: timing.fast },
+  exit: motionSafe({ opacity: 0, y: -12, transition: timing.fast }, { opacity: 0, transition: timing.fast }),
 };
 
 // ============ Fade / Slide ============
@@ -31,35 +42,35 @@ export const fadeIn: Variants = {
 };
 
 export const slideUp: Variants = {
-  hidden: { opacity: 0, y: 24 },
+  hidden: motionSafe({ opacity: 0, y: 24 }, { opacity: 0 }),
   visible: { opacity: 1, y: 0, transition: timing.normal },
 };
 
 export const slideLeft: Variants = {
-  hidden: { opacity: 0, x: -20 },
+  hidden: motionSafe({ opacity: 0, x: -20 }, { opacity: 0 }),
   visible: { opacity: 1, x: 0, transition: timing.normal },
 };
 
 export const slideRight: Variants = {
-  hidden: { opacity: 0, x: 20 },
+  hidden: motionSafe({ opacity: 0, x: 20 }, { opacity: 0 }),
   visible: { opacity: 1, x: 0, transition: timing.normal },
 };
 
 // ============ Scale ============
 
 export const scaleIn: Variants = {
-  hidden: { opacity: 0, scale: 0.85 },
+  hidden: motionSafe({ opacity: 0, scale: 0.85 }, { opacity: 0 }),
   visible: { opacity: 1, scale: 1, transition: timing.spring },
 };
 
 export const scaleBounce: Variants = {
-  hidden: { opacity: 0, scale: 0.5, rotate: -10 },
-  visible: {
+  hidden: motionSafe({ opacity: 0, scale: 0.5, rotate: -10 }, { opacity: 0 }),
+  visible: motionSafe({
     opacity: 1,
     scale: 1,
     rotate: 0,
     transition: timing.bouncy,
-  },
+  }, { opacity: 1, transition: timing.normal }),
 };
 
 // ============ Stagger Container ============
@@ -75,7 +86,7 @@ export const staggerContainer: Variants = {
 };
 
 export const staggerItem: Variants = {
-  hidden: { opacity: 0, y: 16 },
+  hidden: motionSafe({ opacity: 0, y: 16 }, { opacity: 0 }),
   visible: {
     opacity: 1,
     y: 0,
@@ -87,19 +98,19 @@ export const staggerItem: Variants = {
 
 export const cardHover = {
   rest: { y: 0, scale: 1, transition: timing.fast },
-  hover: { y: -6, scale: 1.02, transition: timing.spring },
-  tap: { scale: 0.97, transition: timing.fast },
+  hover: motionSafe({ y: -6, scale: 1.02, transition: timing.spring }, { opacity: 1, transition: timing.fast }),
+  tap: motionSafe({ scale: 0.97, transition: timing.fast }, { opacity: 1, transition: timing.fast }),
 };
 
 // ============ Glow / Pulse ============
 
 export const pulseGlow: Variants = {
   idle: { opacity: 0.3, scale: 1 },
-  pulse: {
+  pulse: motionSafe({
     opacity: [0.3, 0.7, 0.3],
     scale: [1, 1.05, 1],
     transition: { duration: 2, repeat: Infinity, ease: 'easeInOut' },
-  },
+  }, { opacity: 0.45 }),
 };
 
 export const neonFlicker: Variants = {
@@ -113,21 +124,21 @@ export const neonFlicker: Variants = {
 // ============ Unlock / Reveal ============
 
 export const unlockReveal: Variants = {
-  hidden: { scale: 0, rotate: -180, opacity: 0 },
-  visible: {
+  hidden: motionSafe({ scale: 0, rotate: -180, opacity: 0 }, { opacity: 0 }),
+  visible: motionSafe({
     scale: 1,
     rotate: 0,
     opacity: 1,
     transition: { ...timing.bouncy, duration: 0.8 },
-  },
-  exit: { scale: 1.5, opacity: 0, transition: { duration: 0.3 } },
+  }, { opacity: 1, transition: timing.normal }),
+  exit: motionSafe({ scale: 1.5, opacity: 0, transition: { duration: 0.3 } }, { opacity: 0, transition: timing.fast }),
 };
 
 // ============ Particle ============
 
 export const floatUp: Variants = {
   start: { y: 0, opacity: 1, scale: 0.5 },
-  end: { y: -60, opacity: 0, scale: 1.2, transition: { duration: 1.5 } },
+  end: motionSafe({ y: -60, opacity: 0, scale: 1.2, transition: { duration: 1.5 } }, { opacity: 0, transition: timing.fast }),
 };
 
 // ============ Gradient ============

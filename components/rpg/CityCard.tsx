@@ -2,9 +2,9 @@
 
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { CityId } from '@/lib/types';
+import { CityId, cityCompletionPercent } from '@/lib/types';
 import { useCity } from '@/hooks/usePlayer';
-import { ProgressBar } from '@/components/ui/ProgressBar';
+import { TOTAL_LEVELS_PER_CITY } from '@/data/levels';
 
 interface CityCardProps {
   cityId: CityId;
@@ -12,11 +12,14 @@ interface CityCardProps {
 }
 
 export function CityCard({ cityId, index = 0 }: CityCardProps) {
-  const { city, progress, canUnlock, unlockHint } = useCity(cityId);
+  const { city, progress, unlockHint } = useCity(cityId);
 
   if (!city || !progress) return null;
 
   const isUnlocked = progress.unlocked;
+  const totalLevels = TOTAL_LEVELS_PER_CITY[cityId] ?? 3;
+  const pct = cityCompletionPercent(progress, totalLevels);
+  const completedLevels = Object.values(progress.levels).filter((l) => l.completed).length;
 
   return (
     <motion.div
@@ -53,14 +56,23 @@ export function CityCard({ cityId, index = 0 }: CityCardProps) {
           </div>
 
           {isUnlocked ? (
-            <ProgressBar
-              value={progress.completionPercent}
-              color="from-white/40 to-white/60"
-              size="sm"
-            />
+            <div>
+              <div className="flex justify-between text-xs opacity-70 mb-1">
+                <span>关卡</span>
+                <span>{completedLevels}/{totalLevels}</span>
+              </div>
+              <div className="h-1.5 rounded-full bg-white/10 overflow-hidden">
+                <motion.div
+                  className="h-full rounded-full bg-white/40"
+                  initial={{ width: 0 }}
+                  animate={{ width: `${pct}%` }}
+                  transition={{ duration: 0.8, delay: 0.3 }}
+                />
+              </div>
+            </div>
           ) : (
             <p className="text-xs text-slate-400 mt-2">
-              🔒 {unlockHint ?? '条件未知'}
+              🔒 {unlockHint ?? '完成前一城市关卡解锁'}
             </p>
           )}
         </div>

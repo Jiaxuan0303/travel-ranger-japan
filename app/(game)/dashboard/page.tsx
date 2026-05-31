@@ -1,10 +1,16 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { CITY_IDS } from '@/lib/types';
+import { CITY_IDS, CityId } from '@/lib/types';
 import { CityCard } from '@/components/dashboard/CityCard';
+import { useGame } from '@/lib/store/GameProvider';
 
 export default function DashboardPage() {
+  const { state } = useGame();
+  const unlockedCount = (Object.keys(state.cities) as CityId[]).filter(
+    (cid) => state.cities[cid]?.unlocked
+  ).length;
+
   return (
     <div className="max-w-[90rem] mx-auto px-6">
       {/* Title */}
@@ -24,7 +30,7 @@ export default function DashboardPage() {
           探索日本
         </h1>
         <p className="text-sm text-slate-500 mt-1">
-          选择城市，开始你的游侠之旅
+          选择城市，开始你的拼图之旅
         </p>
       </motion.div>
 
@@ -46,7 +52,7 @@ export default function DashboardPage() {
           className="text-[11px] text-slate-700 tracking-[0.3em]"
           style={{ fontFamily: "'DotGothic16', monospace" }}
         >
-          {CITY_IDS.filter((_, i) => i === 0).length} / {CITY_IDS.length} CITIES UNLOCKED
+          {unlockedCount} / {CITY_IDS.length} CITIES UNLOCKED
         </p>
       </motion.div>
     </div>

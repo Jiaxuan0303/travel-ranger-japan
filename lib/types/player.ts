@@ -9,7 +9,6 @@ export type PlayerTitle =
 export interface PlayerState {
   level: number;
   xp: number;
-  skillPoints: number;
   title: PlayerTitle;
   totalVideosWatched: number;
   joinDate: string;

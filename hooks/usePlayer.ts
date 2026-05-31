@@ -22,20 +22,10 @@ export function useCity(cityId: CityId) {
   return {
     city: cityData,
     progress,
-    canUnlock: canUnlockCity(cityData, state.player, state.skills, state.cities),
-    unlockHint: getCityUnlockHint(cityData, state.player, state.skills, state.cities),
+    canUnlock: canUnlockCity(cityId, state.cities),
+    unlockHint: getCityUnlockHint(cityId, state.cities),
     dispatch,
   };
-}
-
-export function useSkills() {
-  const { state, dispatch } = useGame();
-  return { skills: state.skills, player: state.player, dispatch };
-}
-
-export function useQuests(cityId?: CityId) {
-  const { state, dispatch } = useGame();
-  return { quests: state.quests, player: state.player, dispatch, cityId };
 }
 
 export function useUI() {

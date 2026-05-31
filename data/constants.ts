@@ -1,20 +1,12 @@
 export const GAME_CONSTANTS = {
   /** 每级所需经验基数（实际 = 基数 × 等级²） */
   XP_PER_LEVEL_BASE: 100,
-  /** 每次完成任务获得的基础经验 */
-  BASE_QUEST_XP: 100,
-  /** 答题全对额外经验加成比例 */
-  QUIZ_PERFECT_BONUS: 0.5,
-  /** 城市解锁后首次进入额外经验 */
-  FIRST_VISIT_BONUS: 50,
   /** localStorage key */
-  STORAGE_KEY: 'travel-ranger-save-v1',
+  STORAGE_KEY: 'travel-ranger-save-v2',
   /** 存档版本 */
-  SAVE_VERSION: 1,
+  SAVE_VERSION: 2,
   /** 防抖延迟 (ms) */
   SAVE_DEBOUNCE_MS: 500,
-  /** 初始技能点 */
-  STARTING_SKILL_POINTS: 3,
 } as const;
 
 /** 计算升至指定等级所需的总经验 */

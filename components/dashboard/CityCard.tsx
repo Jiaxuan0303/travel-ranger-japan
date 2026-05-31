@@ -3,7 +3,10 @@
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { CityId } from '@/lib/types';
-import { useCity } from '@/hooks/usePlayer';
+import { useGame } from '@/lib/store/GameProvider';
+import { cities } from '@/data/cities';
+import { TOTAL_LEVELS_PER_CITY } from '@/data/levels';
+import { cityCompletionPercent } from '@/lib/types/level';
 
 type CityTheme = {
   name: string;
@@ -85,13 +88,17 @@ interface CityCardProps {
 }
 
 export function CityCard({ cityId, index }: CityCardProps) {
-  const { city, progress } = useCity(cityId);
+  const { state } = useGame();
+  const cityData = cities[cityId];
+  const cityState = state.cities[cityId];
   const theme = cityThemes[cityId];
-  const isUnlocked = progress?.unlocked ?? false;
+  const isUnlocked = cityState?.unlocked ?? false;
 
-  if (!city || !progress) return null;
+  if (!cityData || !cityState) return null;
 
-  const completionPct = progress.completionPercent;
+  const totalLevels = TOTAL_LEVELS_PER_CITY[cityId] ?? 3;
+  const completedLevels = Object.values(cityState.levels).filter((l) => l.completed).length;
+  const completionPct = cityCompletionPercent(cityState, totalLevels);
 
   return (
     <motion.div
@@ -184,17 +191,14 @@ export function CityCard({ cityId, index }: CityCardProps) {
               {/* Progress bar or unlock hint */}
               {isUnlocked ? (
                 <div>
-                  <div className="flex justify-between text-[10px] text-slate-500 mb-1">
-                    <span>探索进度</span>
-                    <span>{completionPct}%</span>
-                  </div>
-                  <div className="h-1 bg-slate-700/50 rounded-full overflow-hidden backdrop-blur-sm">
-                    <motion.div
-                      className={`h-full rounded-full bg-gradient-to-r ${theme.accentColor}`}
-                      initial={{ width: 0 }}
-                      animate={{ width: `${completionPct}%` }}
-                      transition={{ duration: 1, delay: 0.8 + index * 0.15 }}
-                    />
+                  <div className="flex items-center gap-2 text-[11px]">
+                    {completedLevels > 0 ? (
+                      <span className="text-emerald-400">✓ 已完成</span>
+                    ) : (
+                      <span className="text-amber-400">▶ 点击挑战</span>
+                    )}
+                    <span className="text-slate-600">·</span>
+                    <span className="text-slate-500">{cityData.subtitle}</span>
                   </div>
                 </div>
               ) : (
@@ -202,9 +206,7 @@ export function CityCard({ cityId, index }: CityCardProps) {
                   className="text-xs text-slate-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                   initial={false}
                 >
-                  {city.unlockCondition && (
-                    <span>需要 Lv.{city.unlockCondition.minLevel} 解锁</span>
-                  )}
+                  <span>完成前一城市关卡解锁</span>
                 </motion.div>
               )}
             </div>

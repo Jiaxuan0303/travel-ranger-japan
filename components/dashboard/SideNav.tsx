@@ -7,9 +7,6 @@ import { usePathname } from 'next/navigation';
 const navItems = [
   { id: 'home', label: 'Home', icon: '🏠', href: '/dashboard' },
   { id: 'cities', label: 'Cities', icon: '🌆', href: '/cities' },
-  { id: 'skills', label: 'Skills', icon: '⭐', href: '/skills' },
-  { id: 'badges', label: 'Badges', icon: '🏅', href: '/profile' },
-  { id: 'aitools', label: 'AI Tools', icon: '🤖', href: '/profile' },
 ];
 
 export function SideNav() {

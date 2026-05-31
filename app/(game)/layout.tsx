@@ -1,7 +1,7 @@
 import { ParticleBackground } from '@/components/effects';
 import { TopBar } from '@/components/dashboard';
 import { SideNav } from '@/components/dashboard';
-import { DevPanel } from '@/components/dev';
+import { LevelUpModal } from '@/components/rpg/LevelUpModal';
 
 export default function GameLayout({
   children,
@@ -16,7 +16,7 @@ export default function GameLayout({
       <main className="relative z-10 lg:ml-16 pt-4 pb-8">
         {children}
       </main>
-      <DevPanel />
+      <LevelUpModal />
     </div>
   );
 }

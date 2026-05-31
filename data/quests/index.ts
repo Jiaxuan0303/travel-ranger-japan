@@ -1,6 +1,224 @@
-import { Quest } from '@/lib/types';
+import { MiniGame, Quest } from '@/lib/types';
 
-export const tokyoQuests: Quest[] = [
+type QuestDraft = Omit<Quest, 'lessonCards' | 'miniGame'> &
+  Partial<Pick<Quest, 'lessonCards' | 'miniGame'>>;
+
+const hotspotGame = (
+  instruction: string,
+  background: string,
+  labels: [string, number, number, string?][],
+  imageUrl?: string,
+): MiniGame => ({
+  type: 'hotspot',
+  instruction,
+  background,
+  imageUrl,
+  hotspots: labels.map(([label, x, y, explanation], index) => ({
+    id: `spot-${index + 1}`,
+    label,
+    x,
+    y,
+    explanation,
+  })),
+});
+
+const sortGame = (
+  instruction: string,
+  labels: [string, string?][]
+): MiniGame => ({
+  type: 'sort',
+  instruction,
+  items: labels.map(([label, explanation], index) => ({
+    id: `step-${index + 1}`,
+    label,
+    correctOrder: index + 1,
+    explanation,
+  })),
+});
+
+const jigsawGame = (
+  instruction: string,
+  imageUrl: string,
+  gridSize: number = 4,
+): MiniGame => ({
+  type: 'jigsaw',
+  instruction,
+  imageUrl,
+  gridSize,
+});
+
+const miniGamesByQuestId: Record<string, MiniGame> = {
+  'quest-tokyo-1': hotspotGame('找出涩谷十字路口的 3 个关键地标。', '涩谷十字路口', [
+    ['巨型霓虹广告屏', 68, 20, 'QFRONT 大厦的巨型屏幕是涩谷最醒目的地标，时刻播放着最新广告。'],
+    ['十字路口斑马线人潮', 50, 52, '绿灯亮起时，来自多个方向的人潮瞬间涌向路面，形成涩谷最经典的画面。'],
+    ['忠犬八公像入口', 22, 78, '位于车站广场旁的八公像是东京最受欢迎的集合地点，也是涩谷温暖的象征。'],
+  ], '/images/landmarks/shibuya.jpg'),
+  'quest-tokyo-2': hotspotGame('在浅草寺区域找出 3 个文化元素。', '浅草寺', [
+    ['雷门大红灯笼', 50, 40, '高悬在雷门中央的巨型红灯笼上写着「风雷神门」，是浅草寺最经典的标志。'],
+    ['五重塔', 80, 20, '朱红色的五重塔矗立在寺院右侧，是浅草寺建筑群中最高的建筑。'],
+    ['宝藏门大提灯', 50, 72, '穿过仲见世商店街后，宝藏门上的大提灯引领你进入本堂参拜区。'],
+  ], '/images/landmarks/asakusa.jpg'),
+  'quest-tokyo-3': sortGame('把一兰拉面的用餐流程排成正确顺序。', [
+    ['在点餐机购买餐券'],
+    ['进入隔间座位'],
+    ['填写口味偏好单'],
+    ['递交餐券并等待上餐'],
+    ['开始用餐'],
+  ]),
+  'quest-tokyo-4': sortGame('把日语问候放到合适的使用顺序。', [
+    ['早上见面说「おはようございます」'],
+    ['白天见面说「こんにちは」'],
+    ['表达感谢说「ありがとうございます」'],
+    ['分别时说「さようなら」'],
+  ]),
+  'quest-tokyo-5': sortGame('按时间线整理江户到东京的变化。', [
+    ['德川家康建立江户幕府'],
+    ['江户成为政治中心'],
+    ['明治维新后改称东京'],
+    ['皇居保留在旧江户城区域'],
+  ]),
+  'quest-tokyo-6': sortGame('按山手线常见环游顺序排列站点。', [
+    ['东京站'],
+    ['秋叶原'],
+    ['上野'],
+    ['池袋'],
+    ['新宿'],
+    ['涩谷'],
+  ]),
+  'quest-osaka-1': sortGame('按大阪城历史线索排序。', [
+    ['丰臣秀吉开始修建大阪城'],
+    ['大阪城成为权力象征'],
+    ['战乱中多次损毁'],
+    ['现代天守阁重建并开放参观'],
+  ]),
+  'quest-osaka-2': hotspotGame('在道顿堀找出 3 个招牌地标。', '道顿堀', [
+    ['格力高跑男霓虹牌', 70, 25, '奔跑人影的巨型霓虹看板是道顿堀最具标志性的广告牌，已延续数十年。'],
+    ['蟹道乐大螃蟹招牌', 30, 28, '巨大的机械螃蟹招牌横跨建筑外墙，蟹腿会动，是道顿堀最有趣的打卡点。'],
+    ['运河水面霓虹倒影', 50, 78, '道顿堀川的水面倒映两岸霓虹灯光，是大阪夜景最迷人的一幕。'],
+  ], '/images/landmarks/dotonbori.jpg'),
+  'quest-osaka-3': sortGame('把关西腔表达和含义排成学习顺序。', [
+    ['おおきに：谢谢'],
+    ['なんでやねん：吐槽或反问'],
+    ['めっちゃ：非常'],
+    ['まいど：熟人之间的招呼'],
+  ]),
+  'quest-osaka-4': sortGame('把新干线乘车流程排成正确顺序。', [
+    ['购买车票或预约座位'],
+    ['进站并确认站台'],
+    ['找到车厢和座位'],
+    ['放好行李'],
+    ['到站后按指示出站'],
+  ]),
+  'quest-osaka-5': sortGame('规划大阪一日游的合理路线。', [
+    ['上午参观大阪城'],
+    ['中午前往黑门市场用餐'],
+    ['下午逛日本桥或心斋桥'],
+    ['夜晚在道顿堀看霓虹和吃小吃'],
+  ]),
+  'quest-kyoto-1': hotspotGame('在伏见稻荷找出 3 个神社元素。', '伏见稻荷大社', [
+    ['千本鸟居长廊', 50, 44, '朱红色的鸟居一个接一个排列成隧道般的走廊，延伸至稻荷山顶，是京都最震撼的景观之一。'],
+    ['守护狐狸石像', 20, 76, '叼着稻穗的狐狸石像蹲守在参道两旁，狐狸是稻荷大神的使者。'],
+    ['鸟居奉纳者铭文', 72, 40, '每座鸟居背后都刻有奉纳者的名字和日期，记录着企业与个人的祈愿。'],
+  ], '/images/landmarks/fushimi.jpg'),
+  'quest-kyoto-2': sortGame('按茶道体验流程排序。', [
+    ['进入茶室前整理仪容'],
+    ['欣赏茶具与茶室布置'],
+    ['品尝和菓子'],
+    ['接过茶碗并转动'],
+    ['安静品尝抹茶'],
+  ]),
+  'quest-kyoto-3': sortGame('按一汁三菜的餐桌构成排序。', [
+    ['米饭放在左前方'],
+    ['汤品放在右前方'],
+    ['主菜放在后方'],
+    ['两道副菜补充口味和营养'],
+  ]),
+  'quest-kyoto-4': sortGame('按平安京相关历史顺序排列。', [
+    ['迁都平安京'],
+    ['贵族文化发展'],
+    ['文学与和歌繁荣'],
+    ['京都成为千年古都象征'],
+  ]),
+  'quest-kyoto-5': sortGame('把和服类型与场合按正式程度排序。', [
+    ['浴衣：夏日祭典等休闲场合'],
+    ['小纹：日常外出'],
+    ['访问着：半正式拜访'],
+    ['振袖：未婚女性正式礼装'],
+  ]),
+  'quest-kyoto-6': sortGame('按清酒入门品鉴流程排序。', [
+    ['观察酒标和类型'],
+    ['闻香气'],
+    ['小口品尝'],
+    ['记录口感和适合搭配的料理'],
+  ]),
+  'quest-kamakura-1': hotspotGame('在镰仓大佛区域找出 3 个观察点。', '镰仓大佛', [
+    ['阿弥陀佛庄严面相', 50, 26, '大佛微闭的双眼与柔和的嘴角弧度，传递出镰仓时代佛教艺术的宁静与慈悲。'],
+    ['青铜手印结定印', 50, 54, '大佛双手结「定印」，手心向上叠放腿上，代表禅定与智慧，是阿弥陀佛的经典手势。'],
+    ['莲花宝座', 50, 80, '莲花座承托着121吨的青铜佛像，花瓣雕刻精细，象征净土世界的清净庄严。'],
+  ], '/images/landmarks/daibutsu.jpg'),
+  'quest-kamakura-2': sortGame('按江之电从藤泽到镰仓的经典路线排序。', [
+    ['藤泽'],
+    ['江之岛'],
+    ['镰仓高校前'],
+    ['长谷'],
+    ['镰仓'],
+  ]),
+  'quest-kamakura-3': sortGame('按镰仓幕府相关历史线排序。', [
+    ['源赖朝势力崛起'],
+    ['建立镰仓幕府'],
+    ['武士政治成为时代特征'],
+    ['镰仓留下众多武家文化遗迹'],
+  ]),
+  'quest-kamakura-4': sortGame('按坐禅体验的准备流程排序。', [
+    ['进入寺院保持安静'],
+    ['调整坐姿和呼吸'],
+    ['将注意力放回当下'],
+    ['结束后合掌致意'],
+  ]),
+  'quest-tokyo-7': jigsawGame('将涩谷十字街头的画面拼回完整照片，感受世界最繁忙路口的每个角落。', '/images/puzzles/shibuya-puzzle.png'),
+  'quest-tokyo-8': jigsawGame('将浅草寺的画面拼回完整照片，在拼合中记住每一处文化细节。', '/images/puzzles/asakusa-puzzle.png'),
+  'quest-osaka-6': jigsawGame('将道顿堀的画面拼回完整照片，把大阪的美食霓虹重新点亮。', '/images/puzzles/dotonbori-puzzle.png'),
+  'quest-kyoto-7': jigsawGame('将伏见稻荷大社的画面拼回完整照片，在朱红鸟居中穿越千年时光。', '/images/puzzles/fushimi-puzzle.png'),
+  'quest-kamakura-5': jigsawGame('将镰仓大佛的画面拼回完整照片，感受青铜佛像的庄严与禅意。', '/images/puzzles/daibutsu-puzzle.png'),
+};
+
+function buildLessonCards(quest: QuestDraft) {
+  const firstQuestion = quest.quiz?.[0]?.question;
+  return [
+    {
+      title: '任务背景',
+      content: quest.description,
+    },
+    {
+      title: '观察重点',
+      content: firstQuestion
+        ? `挑战前先记住这个问题：${firstQuestion}`
+        : '挑战前先抓住地点、礼仪、路线或表达方式中的关键线索。',
+    },
+    {
+      title: '通关提示',
+      content: '小游戏不会锁死失败，先尝试，再根据反馈调整答案。',
+      tip: '完成小游戏后才会结算 XP 和技能点。',
+    },
+  ];
+}
+
+function enhanceQuest(quest: QuestDraft): Quest {
+  return {
+    ...quest,
+    lessonCards: quest.lessonCards ?? buildLessonCards(quest),
+    miniGame:
+      quest.miniGame ??
+      miniGamesByQuestId[quest.id] ??
+      sortGame('把任务知识点按合理顺序排列。', [
+        ['阅读任务背景'],
+        ['识别文化线索'],
+        ['完成挑战'],
+      ]),
+  };
+}
+
+const tokyoQuestDrafts: QuestDraft[] = [
   {
     id: 'quest-tokyo-1',
     title: '涉谷十字路口：世界上最忙的马路',
@@ -139,9 +357,53 @@ export const tokyoQuests: Quest[] = [
       },
     ],
   },
+  {
+    id: 'quest-tokyo-7',
+    title: '涩谷拼图：拼出十字路口',
+    description: '将涩谷十字街头的照片拼回完整画面，在拼合中感受世界最繁忙路口的每一个角落。',
+    cityId: 'tokyo',
+    durationSec: 240,
+    xpReward: 220,
+    skillRewardIds: ['tokyo-transport-2'],
+    difficulty: 2,
+    quiz: [
+      {
+        question: '涩谷十字路口是世界第几繁忙的步行路口？',
+        options: ['第一', '第二', '第三', '第五'],
+        correctIndex: 0,
+      },
+      {
+        question: '涩谷的「スクランブル交差点」在日语中怎么读？',
+        options: ['Sukuranburu kōsaten', 'Shibuya kōsaten', 'Sukuranburu kōsaten', 'Shibuya sukuranburu'],
+        correctIndex: 2,
+      },
+    ],
+  },
+  {
+    id: 'quest-tokyo-8',
+    title: '浅草寺拼图：拼出古寺之美',
+    description: '将浅草寺的照片拼回完整画面，在每一块碎片中感受江户下町的传统文化。',
+    cityId: 'tokyo',
+    durationSec: 240,
+    xpReward: 220,
+    skillRewardIds: ['tokyo-culture-1'],
+    difficulty: 2,
+    quiz: [
+      {
+        question: '浅草寺的正式名称是什么？',
+        options: ['金龙山浅草寺', '风雷神门寺', '浅草观音寺', '金龙山观音院'],
+        correctIndex: 0,
+      },
+      {
+        question: '浅草寺创建于哪个世纪？',
+        options: ['5世纪', '7世纪', '9世纪', '12世纪'],
+        correctIndex: 1,
+      },
+    ],
+  },
 ];
 
-export const osakaQuests: Quest[] = [
+const osakaQuestDrafts: QuestDraft[] = [
   {
     id: 'quest-osaka-1',
     title: '大阪城：丰臣秀吉的梦想之城',
@@ -257,9 +519,31 @@ export const osakaQuests: Quest[] = [
       },
     ],
   },
+  {
+    id: 'quest-osaka-6',
+    title: '道顿堀拼图：拼出美食霓虹',
+    description: '将道顿堀的夜景照片拼回完整画面，把大阪美食街的霓虹灯光重新点亮。',
+    cityId: 'osaka',
+    durationSec: 240,
+    xpReward: 220,
+    skillRewardIds: ['osaka-food-1'],
+    difficulty: 2,
+    quiz: [
+      {
+        question: '道顿堀的名字来源于什么？',
+        options: ['一个人名', '一条运河的名字', '一种食物', '一个将军'],
+        correctIndex: 1,
+      },
+      {
+        question: '道顿堀最有名的美食之一是？',
+        options: ['寿司', '章鱼烧', '天妇罗', '寿喜烧'],
+        correctIndex: 1,
+      },
+    ],
+  },
 ];
 
-export const kyotoQuests: Quest[] = [
+const kyotoQuestDrafts: QuestDraft[] = [
   {
     id: 'quest-kyoto-1',
     title: '千本鸟居：穿越朱红色的时光隧道',
@@ -403,9 +687,31 @@ export const kyotoQuests: Quest[] = [
       },
     ],
   },
+  {
+    id: 'quest-kyoto-7',
+    title: '伏见稻荷拼图：拼出千本鸟居',
+    description: '将伏见稻荷大社的照片拼回完整画面，在朱红色的鸟居长廊中穿越千年时光。',
+    cityId: 'kyoto',
+    durationSec: 240,
+    xpReward: 230,
+    skillRewardIds: ['kyoto-culture-2'],
+    difficulty: 2,
+    quiz: [
+      {
+        question: '伏见稻荷大社的千本鸟居大约有多少座？',
+        options: ['约100座', '约1000座', '约5000座', '约1万座'],
+        correctIndex: 3,
+      },
+      {
+        question: '稻荷神社的使者动物是什么？',
+        options: ['猫', '狗', '狐狸', '鹿'],
+        correctIndex: 2,
+      },
+    ],
+  },
 ];
 
-export const kamakuraQuests: Quest[] = [
+const kamakuraQuestDrafts: QuestDraft[] = [
   {
     id: 'quest-kamakura-1',
     title: '镰仓大佛：青铜中的禅意',
@@ -498,7 +804,34 @@ export const kamakuraQuests: Quest[] = [
       },
     ],
   },
+  {
+    id: 'quest-kamakura-5',
+    title: '镰仓大佛拼图：拼出青铜禅意',
+    description: '将镰仓大佛的照片拼回完整画面，感受高德院青铜佛像的庄严与千年禅意。',
+    cityId: 'kamakura',
+    durationSec: 240,
+    xpReward: 230,
+    skillRewardIds: ['kamakura-history-1'],
+    difficulty: 2,
+    quiz: [
+      {
+        question: '镰仓大佛的材质是什么？',
+        options: ['铁', '青铜', '黄金', '石材'],
+        correctIndex: 1,
+      },
+      {
+        question: '镰仓大佛位于哪座寺院内？',
+        options: ['建长寺', '圆觉寺', '高德院', '长谷寺'],
+        correctIndex: 2,
+      },
+    ],
+  },
 ];
+
+export const tokyoQuests: Quest[] = tokyoQuestDrafts.map(enhanceQuest);
+export const osakaQuests: Quest[] = osakaQuestDrafts.map(enhanceQuest);
+export const kyotoQuests: Quest[] = kyotoQuestDrafts.map(enhanceQuest);
+export const kamakuraQuests: Quest[] = kamakuraQuestDrafts.map(enhanceQuest);
 
 export const allQuests: Quest[] = [
   ...tokyoQuests,

@@ -1,15 +1,27 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { usePlayer, useQuests } from '@/hooks/usePlayer';
-import { xpProgressPercent, xpForNextLevel, xpProgressInLevel } from '@/data/constants';
+import { usePlayer } from '@/hooks/usePlayer';
+import { useGame } from '@/lib/store/GameProvider';
+import { xpProgressPercent, xpForNextLevel, xpProgressInLevel, levelFromXp } from '@/data/constants';
+import { cities } from '@/data/cities';
+import { CityId } from '@/lib/types';
 
 export function TopBar() {
   const { player } = usePlayer();
-  const { quests } = useQuests();
+  const { state } = useGame();
   const xpPct = xpProgressPercent(player.xp);
   const xpIn = xpProgressInLevel(player.xp);
   const xpNeed = xpForNextLevel(player.level);
+
+  // Count completed levels
+  let completedLevels = 0;
+  for (const cid of Object.keys(state.cities) as CityId[]) {
+    const cs = state.cities[cid];
+    if (cs) {
+      completedLevels += Object.values(cs.levels).filter((l) => l.completed).length;
+    }
+  }
 
   return (
     <motion.header
@@ -21,7 +33,6 @@ export function TopBar() {
       <div className="flex items-center justify-between px-6 py-4 max-w-[90rem] mx-auto">
         {/* Left: Level & EXP */}
         <div className="flex items-center gap-6">
-          {/* Level badge */}
           <div className="flex items-center gap-2">
             <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-amber-500/20 to-orange-500/20 border border-amber-500/30 flex items-center justify-center backdrop-blur-sm">
               <span className="text-amber-400 font-bold text-sm">Lv</span>
@@ -59,35 +70,24 @@ export function TopBar() {
 
         {/* Right: Stats */}
         <div className="flex items-center gap-4">
-          {/* Daily Quests */}
+          {/* Puzzles completed */}
           <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-800/40 border border-slate-700/30 backdrop-blur-sm">
-            <span className="text-sm">📜</span>
+            <span className="text-sm">🧩</span>
             <div className="text-right">
-              <div className="text-xs text-slate-400">今日任务</div>
+              <div className="text-xs text-slate-400">拼图完成</div>
               <div className="text-sm font-bold text-emerald-400 tabular-nums">
-                {quests.completed.length} <span className="text-slate-600">/ 3</span>
+                {completedLevels}
               </div>
             </div>
           </div>
 
-          {/* Badges */}
+          {/* Cities unlocked */}
           <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-800/40 border border-slate-700/30 backdrop-blur-sm">
-            <span className="text-sm">🏅</span>
+            <span className="text-sm">🌆</span>
             <div className="text-right">
-              <div className="text-xs text-slate-400">徽章</div>
-              <div className="text-sm font-bold text-purple-400 tabular-nums">
-                {Math.floor(quests.completed.length / 3)}
-              </div>
-            </div>
-          </div>
-
-          {/* Skill Points */}
-          <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-800/40 border border-slate-700/30 backdrop-blur-sm">
-            <span className="text-sm">⭐</span>
-            <div className="text-right">
-              <div className="text-xs text-slate-400">技能点</div>
-              <div className="text-sm font-bold text-amber-400 tabular-nums">
-                {player.skillPoints}
+              <div className="text-xs text-slate-400">城市</div>
+              <div className="text-sm font-bold text-indigo-400 tabular-nums">
+                {Object.values(state.cities).filter(c => c.unlocked).length} / 4
               </div>
             </div>
           </div>
